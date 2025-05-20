@@ -1,10 +1,8 @@
 "use server"
 
-import { auth, signIn, signOut } from "@/auth"
-import { hash } from "bcryptjs"
+import { auth, signIn, signOut, createUserAccount, getUserByEmail } from "@/auth"
 import { redirect } from "next/navigation"
 import { AuthError } from "next-auth"
-import { prisma } from "@/lib/db"
 
 export type SignUpFormState = {
   errors?: {
@@ -55,9 +53,7 @@ export async function signUp(prevState: SignUpFormState, formData: FormData): Pr
 
   try {
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
+    const existingUser = await getUserByEmail(email)
 
     if (existingUser) {
       return {
@@ -67,17 +63,8 @@ export async function signUp(prevState: SignUpFormState, formData: FormData): Pr
       }
     }
 
-    // Hash password
-    const hashedPassword = await hash(password, 10)
-
     // Create new user
-    await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: email.split("@")[0], // Default name from email
-      },
-    })
+    await createUserAccount(email, password)
 
     // Sign in the user after creation
     await signIn("credentials", {

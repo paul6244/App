@@ -11,9 +11,6 @@ importers:
       '@auth/core':
         specifier: latest
         version: 0.39.1(nodemailer@7.0.3)
-      '@auth/prisma-adapter':
-        specifier: latest
-        version: 2.9.1(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.0.2))(typescript@5.0.2))(nodemailer@7.0.3)
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.9.1(react-hook-form@7.54.1(react@19.0.0))
@@ -215,11 +212,6 @@ packages:
         optional: true
       nodemailer:
         optional: true
-
-  '@auth/prisma-adapter@2.9.1':
-    resolution: {integrity: sha512-0ZfjOPt3Ci8yx8SMCydAuBAjR/exI/8SAr6JDVYtqDFhm0JaV1XuHYgEzgzXZZfW2+WKC29LowCWxdCjoAz9kQ==}
-    peerDependencies:
-      '@prisma/client': '>=2.26.0 || >=3 || >=4 || >=5 || >=6'
 
   '@babel/runtime@7.27.1':
     resolution: {integrity: sha512-1x3D2xEk2fRo3PAhwQwu5UubzgiVWSXTBfWpVd2Mx2AzRqJuDJCsgaDVZ7HB5iGzDW1Hl1sWN2mFyKjmR9uAog==}
@@ -2075,15 +2067,6 @@ snapshots:
       preact-render-to-string: 6.5.11(preact@10.24.3)
     optionalDependencies:
       nodemailer: 7.0.3
-
-  '@auth/prisma-adapter@2.9.1(@prisma/client@6.8.2(prisma@6.8.2(typescript@5.0.2))(typescript@5.0.2))(nodemailer@7.0.3)':
-    dependencies:
-      '@auth/core': 0.39.1(nodemailer@7.0.3)
-      '@prisma/client': 6.8.2(prisma@6.8.2(typescript@5.0.2))(typescript@5.0.2)
-    transitivePeerDependencies:
-      - '@simplewebauthn/browser'
-      - '@simplewebauthn/server'
-      - nodemailer
 
   '@babel/runtime@7.27.1': {}
 

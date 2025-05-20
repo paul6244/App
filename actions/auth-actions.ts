@@ -71,7 +71,7 @@ export async function signUp(prevState: SignUpFormState, formData: FormData): Pr
     const hashedPassword = await hash(password, 10)
 
     // Create new user
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email,
         password: hashedPassword,

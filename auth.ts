@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { compare } from "bcrypt"
+import { compare } from "bcryptjs" // Changed from bcrypt to bcryptjs
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
 

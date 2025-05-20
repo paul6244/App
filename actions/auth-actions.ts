@@ -2,7 +2,7 @@
 
 import { auth, signIn, signOut } from "@/auth"
 import { PrismaClient } from "@prisma/client"
-import { hash } from "bcrypt"
+import { hash } from "bcryptjs" // Changed from bcrypt to bcryptjs
 import { redirect } from "next/navigation"
 import { AuthError } from "next-auth"
 

@@ -3,19 +3,27 @@
 import { useRouter } from "next/navigation"
 import { StatusBar } from "@/components/status-bar"
 import { HomeIndicator } from "@/components/home-indicator"
-import { Home, Search, ShoppingBag, User, Settings, CreditCard, MapPin, Heart, LogOut } from "lucide-react"
+import { Home, Search, ShoppingBag, User, Settings, CreditCard, MapPin, Heart, LogOut, Loader2 } from "lucide-react"
 import { useState } from "react"
+import { useSession, signOut } from "next-auth/react"
 
 export default function ProfilePage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("profile")
+  const { data: session, status } = useSession()
 
-  // Mock user data
-  const user = {
-    name: "Alex Johnson",
-    email: "alex@example.com",
-    phone: "+1 (555) 123-4567",
-    avatar: "/placeholder.svg?height=80&width=80",
+  const handleLogout = async () => {
+    await signOut({ redirect: false })
+    router.push("/")
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-rose-100 via-rose-50 to-white items-center justify-center">
+        <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
+        <p className="mt-2 text-gray-600">Loading profile...</p>
+      </div>
+    )
   }
 
   return (
@@ -31,12 +39,15 @@ export default function ProfilePage() {
       <div className="px-6 py-4 bg-white shadow-sm">
         <div className="flex items-center">
           <div className="w-20 h-20 rounded-full overflow-hidden">
-            <img src={user.avatar || "/placeholder.svg"} alt="Profile" className="w-full h-full object-cover" />
+            <img
+              src={session?.user?.image || "/placeholder.svg?height=80&width=80"}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div className="ml-4">
-            <h2 className="text-xl font-bold">{user.name}</h2>
-            <p className="text-gray-500">{user.email}</p>
-            <p className="text-gray-500">{user.phone}</p>
+            <h2 className="text-xl font-bold">{session?.user?.name || "User"}</h2>
+            <p className="text-gray-500">{session?.user?.email}</p>
           </div>
         </div>
         <button
@@ -88,10 +99,7 @@ export default function ProfilePage() {
               <span className="text-gray-400">›</span>
             </button>
             <div className="border-t border-gray-100"></div>
-            <button
-              className="w-full p-4 flex items-center justify-between text-red-500"
-              onClick={() => router.push("/")}
-            >
+            <button className="w-full p-4 flex items-center justify-between text-red-500" onClick={handleLogout}>
               <div className="flex items-center">
                 <LogOut className="h-5 w-5 mr-3" />
                 <span className="font-medium">Log Out</span>

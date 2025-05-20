@@ -1,12 +1,10 @@
 "use server"
 
 import { auth, signIn, signOut } from "@/auth"
-import { PrismaClient } from "@prisma/client"
-import { hash } from "bcryptjs" // Changed from bcrypt to bcryptjs
+import { hash } from "bcryptjs"
 import { redirect } from "next/navigation"
 import { AuthError } from "next-auth"
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/db"
 
 export type SignUpFormState = {
   errors?: {

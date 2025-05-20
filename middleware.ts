@@ -1,7 +1,8 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-export default async function middleware(req) {
+export default async function middleware(req: NextRequest) {
   const session = await auth()
   const { pathname } = req.nextUrl
 

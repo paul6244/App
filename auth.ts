@@ -1,21 +1,15 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { compare } from "bcryptjs" // Changed from bcrypt to bcryptjs
-import { PrismaAdapter } from "@auth/prisma-adapter"
+import { compare } from "bcryptjs"
 import { PrismaClient } from "@prisma/client"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 
+// Initialize Prisma Client
 const prisma = new PrismaClient()
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
     signOut: "/",
@@ -34,9 +28,7 @@ export const {
         }
 
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
+          where: { email: credentials.email },
         })
 
         if (!user || !user.password) {

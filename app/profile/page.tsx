@@ -1,159 +1,107 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { StatusBar } from "@/components/status-bar"
-import { HomeIndicator } from "@/components/home-indicator"
-import { Home, Search, ShoppingBag, User, Settings, CreditCard, MapPin, Heart, LogOut, Loader2 } from "lucide-react"
-import { useState } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { BottomNav } from "@/components/bottom-nav"
+import { User, ShoppingBag, CreditCard, MapPin, Heart, Settings, HelpCircle, LogOut, ChevronRight } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/context/auth-context"
 
 export default function ProfilePage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState("profile")
-  const { data: session, status } = useSession()
+  const { user, logout, isAuthenticated } = useAuth()
 
-  const handleLogout = async () => {
-    await signOut({ redirect: false })
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    router.push("/login")
+    return null
+  }
+
+  const handleLogout = () => {
+    logout()
     router.push("/")
   }
 
-  if (status === "loading") {
-    return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-b from-rose-100 via-rose-50 to-white items-center justify-center">
-        <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
-        <p className="mt-2 text-gray-600">Loading profile...</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-rose-100 via-rose-50 to-white">
+    <div className="flex flex-col min-h-screen auth-gradient pb-16">
       <StatusBar />
 
       {/* Header */}
-      <header className="px-6 py-4">
-        <h1 className="text-2xl font-bold text-black">Profile</h1>
+      <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm">
+        <h1 className="text-xl font-bold">My Profile</h1>
       </header>
 
-      {/* User Info */}
-      <div className="px-6 py-4 bg-white shadow-sm">
-        <div className="flex items-center">
-          <div className="w-20 h-20 rounded-full overflow-hidden">
-            <img
-              src={session?.user?.image || "/placeholder.svg?height=80&width=80"}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="ml-4">
-            <h2 className="text-xl font-bold">{session?.user?.name || "User"}</h2>
-            <p className="text-gray-500">{session?.user?.email}</p>
+      {/* Main content */}
+      <main className="flex-1 p-4 max-w-4xl mx-auto w-full">
+        <div className="content-card p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto sm:mx-0 sm:mr-6 mb-4 sm:mb-0">
+              <User className="h-8 w-8 sm:h-10 sm:w-10 text-purple-600" />
+            </div>
+            <div className="text-center sm:text-left flex-1">
+              <h2 className="font-bold text-lg sm:text-xl">{user?.name || "User"}</h2>
+              <p className="text-gray-500">{user?.email || "user@example.com"}</p>
+            </div>
+            <button className="mt-4 sm:mt-0 w-full sm:w-auto py-2 px-4 border border-purple-600 text-purple-600 rounded-full font-medium hover:bg-purple-50 transition-colors">
+              Edit Profile
+            </button>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="content-card overflow-hidden">
+            <h3 className="font-semibold p-4 border-b">My Account</h3>
+            <div className="divide-y">
+              <Link href="/orders" className="flex items-center p-4 hover:bg-gray-50">
+                <ShoppingBag className="h-5 w-5 text-purple-600 mr-3" />
+                <span className="flex-1">My Orders</span>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </Link>
+              <Link href="/payment-methods" className="flex items-center p-4 hover:bg-gray-50">
+                <CreditCard className="h-5 w-5 text-purple-600 mr-3" />
+                <span className="flex-1">Payment Methods</span>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </Link>
+              <Link href="/addresses" className="flex items-center p-4 hover:bg-gray-50">
+                <MapPin className="h-5 w-5 text-purple-600 mr-3" />
+                <span className="flex-1">Addresses</span>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </Link>
+              <Link href="/favorites" className="flex items-center p-4 hover:bg-gray-50">
+                <Heart className="h-5 w-5 text-purple-600 mr-3" />
+                <span className="flex-1">My Favorites</span>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="content-card overflow-hidden">
+            <h3 className="font-semibold p-4 border-b">Settings</h3>
+            <div className="divide-y">
+              <Link href="/settings" className="flex items-center p-4 hover:bg-gray-50">
+                <Settings className="h-5 w-5 text-purple-600 mr-3" />
+                <span className="flex-1">App Settings</span>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </Link>
+              <Link href="/help" className="flex items-center p-4 hover:bg-gray-50">
+                <HelpCircle className="h-5 w-5 text-purple-600 mr-3" />
+                <span className="flex-1">Help & Support</span>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
         <button
-          className="mt-4 w-full py-2 border border-purple-500 text-purple-500 rounded-full font-medium"
-          onClick={() => router.push("/edit-profile")}
+          onClick={handleLogout}
+          className="flex items-center justify-center w-full max-w-md mx-auto mt-8 py-3 bg-white/80 text-red-500 rounded-full font-medium hover:bg-white transition-colors"
         >
-          Edit Profile
+          <LogOut className="h-5 w-5 mr-2" />
+          Logout
         </button>
-      </div>
+      </main>
 
-      {/* Profile Options */}
-      <div className="px-6 py-4 flex-1">
-        <div className="space-y-4">
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <button
-              className="w-full p-4 flex items-center justify-between"
-              onClick={() => router.push("/payment-methods")}
-            >
-              <div className="flex items-center">
-                <CreditCard className="h-5 w-5 text-purple-500 mr-3" />
-                <span className="font-medium">Payment Methods</span>
-              </div>
-              <span className="text-gray-400">›</span>
-            </button>
-            <div className="border-t border-gray-100"></div>
-            <button className="w-full p-4 flex items-center justify-between" onClick={() => router.push("/addresses")}>
-              <div className="flex items-center">
-                <MapPin className="h-5 w-5 text-purple-500 mr-3" />
-                <span className="font-medium">Saved Addresses</span>
-              </div>
-              <span className="text-gray-400">›</span>
-            </button>
-            <div className="border-t border-gray-100"></div>
-            <button className="w-full p-4 flex items-center justify-between" onClick={() => router.push("/favorites")}>
-              <div className="flex items-center">
-                <Heart className="h-5 w-5 text-purple-500 mr-3" />
-                <span className="font-medium">Favorites</span>
-              </div>
-              <span className="text-gray-400">›</span>
-            </button>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <button className="w-full p-4 flex items-center justify-between" onClick={() => router.push("/settings")}>
-              <div className="flex items-center">
-                <Settings className="h-5 w-5 text-purple-500 mr-3" />
-                <span className="font-medium">Settings</span>
-              </div>
-              <span className="text-gray-400">›</span>
-            </button>
-            <div className="border-t border-gray-100"></div>
-            <button className="w-full p-4 flex items-center justify-between text-red-500" onClick={handleLogout}>
-              <div className="flex items-center">
-                <LogOut className="h-5 w-5 mr-3" />
-                <span className="font-medium">Log Out</span>
-              </div>
-              <span className="text-gray-400">›</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="bg-white border-t border-gray-200 px-6 py-2">
-        <div className="flex justify-around">
-          <button
-            className={`flex flex-col items-center p-2 ${activeTab === "home" ? "text-purple-500" : "text-gray-500"}`}
-            onClick={() => {
-              setActiveTab("home")
-              router.push("/home")
-            }}
-          >
-            <Home className="h-6 w-6" />
-            <span className="text-xs mt-1">Home</span>
-          </button>
-          <button
-            className={`flex flex-col items-center p-2 ${activeTab === "search" ? "text-purple-500" : "text-gray-500"}`}
-            onClick={() => {
-              setActiveTab("search")
-              router.push("/search")
-            }}
-          >
-            <Search className="h-6 w-6" />
-            <span className="text-xs mt-1">Search</span>
-          </button>
-          <button
-            className={`flex flex-col items-center p-2 ${activeTab === "orders" ? "text-purple-500" : "text-gray-500"}`}
-            onClick={() => {
-              setActiveTab("orders")
-              router.push("/orders")
-            }}
-          >
-            <ShoppingBag className="h-6 w-6" />
-            <span className="text-xs mt-1">Orders</span>
-          </button>
-          <button
-            className={`flex flex-col items-center p-2 ${activeTab === "profile" ? "text-purple-500" : "text-gray-500"}`}
-            onClick={() => setActiveTab("profile")}
-          >
-            <User className="h-6 w-6" />
-            <span className="text-xs mt-1">Profile</span>
-          </button>
-        </div>
-      </div>
-
-      <HomeIndicator />
+      <BottomNav />
     </div>
   )
 }

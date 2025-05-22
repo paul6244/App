@@ -1,201 +1,123 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { StatusBar } from "@/components/status-bar"
-import { HomeIndicator } from "@/components/home-indicator"
-import { ArrowLeft, Minus, Plus, MapPin, Clock, CreditCard, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { BottomNav } from "@/components/bottom-nav"
+import { Minus, Plus, ShoppingBag, Trash2, ArrowRight } from "lucide-react"
+import Link from "next/link"
+import { useCart } from "@/context/cart-context"
+import { useRouter } from "next/navigation"
 
 export default function CartPage() {
+  const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart()
   const router = useRouter()
 
-  // Mock cart items
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Margherita Pizza",
-      options: 'Medium (12"), Thin Crust, Extra Cheese',
-      price: 16.49,
-      quantity: 1,
-      image: "/placeholder.svg?height=60&width=60",
-    },
-    {
-      id: 2,
-      name: "Caesar Salad",
-      options: "Regular, No Croutons",
-      price: 8.99,
-      quantity: 1,
-      image: "/placeholder.svg?height=60&width=60",
-    },
-  ])
-
-  // Mock delivery details
-  const deliveryDetails = {
-    address: "123 Main Street, Apt 4B",
-    deliveryTime: "15-25 min",
-    deliveryFee: 2.99,
-    subtotal: cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
-    tax: 2.85,
-  }
-
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity < 1) return
-
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
-  }
-
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
-
-  const calculateTotal = () => {
-    const subtotal = deliveryDetails.subtotal
-    return (subtotal + deliveryDetails.deliveryFee + deliveryDetails.tax).toFixed(2)
+  const handleCheckout = () => {
+    if (items.length === 0) return
+    router.push("/checkout")
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-rose-100 via-rose-50 to-white">
+    <div className="flex flex-col min-h-screen auth-gradient pb-16">
       <StatusBar />
 
       {/* Header */}
-      <header className="px-6 py-4 flex items-center">
-        <button className="mr-4" onClick={() => router.back()}>
-          <ArrowLeft className="h-6 w-6 text-black" />
-        </button>
-        <h1 className="text-2xl font-bold text-black">Your Cart</h1>
+      <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm">
+        <h1 className="text-xl font-bold">Shopping Cart</h1>
       </header>
 
-      {/* Delivery Details */}
-      <div className="px-6 py-2 bg-white shadow-sm mb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start">
-            <MapPin className="h-5 w-5 text-purple-500 mt-1 mr-2" />
-            <div>
-              <p className="font-medium">Deliver to</p>
-              <p className="text-sm text-gray-600">{deliveryDetails.address}</p>
+      {/* Main content */}
+      <main className="flex-1 p-4">
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center p-4">
+            <div className="content-card p-8 rounded-xl">
+              <ShoppingBag className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
+              <p className="text-gray-500 mb-4">Add items to your cart to checkout</p>
+              <Link
+                href="/products"
+                className="px-6 py-3 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition-colors"
+              >
+                Browse Products
+              </Link>
             </div>
-          </div>
-          <button className="text-purple-500 text-sm font-medium">Change</button>
-        </div>
-        <div className="flex items-start mt-4 justify-between">
-          <div className="flex items-start">
-            <Clock className="h-5 w-5 text-purple-500 mt-1 mr-2" />
-            <div>
-              <p className="font-medium">Delivery Time</p>
-              <p className="text-sm text-gray-600">{deliveryDetails.deliveryTime}</p>
-            </div>
-          </div>
-          <button className="text-purple-500 text-sm font-medium">Schedule</button>
-        </div>
-      </div>
-
-      {/* Cart Items */}
-      <div className="px-6 py-2 flex-1">
-        <h2 className="text-lg font-bold text-black mb-4">Order Summary</h2>
-        {cartItems.length > 0 ? (
-          <div className="space-y-4">
-            {cartItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl shadow-sm p-3 flex">
-                <div className="w-16 h-16 rounded-lg overflow-hidden">
-                  <img src={item.image || "/placeholder.svg"} alt={item.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 ml-3">
-                  <div className="flex justify-between">
-                    <h3 className="font-bold">{item.name}</h3>
-                    <p className="font-bold text-purple-600">${(item.price * item.quantity).toFixed(2)}</p>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">{item.options}</p>
-                  <div className="flex justify-between items-center mt-2">
-                    <div className="flex items-center">
-                      <button
-                        className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      >
-                        <Minus className="h-3 w-3 text-gray-700" />
-                      </button>
-                      <span className="mx-2 text-sm font-medium">{item.quantity}</span>
-                      <button
-                        className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      >
-                        <Plus className="h-3 w-3 text-gray-700" />
-                      </button>
-                    </div>
-                    <button className="text-red-500" onClick={() => removeItem(item.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Your cart is empty</p>
-            <Button
-              className="mt-4 bg-purple-500 hover:bg-purple-600 text-white rounded-full"
-              onClick={() => router.push("/home")}
+          <>
+            <div className="space-y-4 mb-6">
+              {items.map((item) => (
+                <div key={item.id} className="content-card flex overflow-hidden">
+                  <div className="w-24 h-24 flex-shrink-0">
+                    <img
+                      src={item.image || "/placeholder.svg"}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg?height=100&width=100"
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 p-3 flex flex-col">
+                    <div className="flex justify-between">
+                      <h3 className="font-semibold">{item.name}</h3>
+                      <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500">
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <p className="text-gray-500 text-sm">{item.category}</p>
+                    <div className="flex justify-between items-center mt-auto">
+                      <span className="font-bold">₵{(item.price * item.quantity).toFixed(2)}</span>
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="p-1 bg-gray-100 rounded-full hover:bg-gray-200"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="mx-2 w-6 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="p-1 bg-gray-100 rounded-full hover:bg-gray-200"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="content-card p-4 mb-4">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500">Subtotal</span>
+                <span>₵{totalPrice.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500">Shipping</span>
+                <span>₵35.00</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500">Tax</span>
+                <span>₵{(totalPrice * 0.08).toFixed(2)}</span>
+              </div>
+              <div className="border-t mt-3 pt-3 flex justify-between font-bold">
+                <span>Total</span>
+                <span>₵{(totalPrice + 35 + totalPrice * 0.08).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleCheckout}
+              className="w-full py-4 bg-purple-600 text-white rounded-full font-bold flex items-center justify-center hover:bg-purple-700 transition-colors"
             >
-              Browse Restaurants
-            </Button>
-          </div>
+              Proceed to Checkout
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+          </>
         )}
-      </div>
+      </main>
 
-      {/* Payment Method */}
-      {cartItems.length > 0 && (
-        <div className="px-6 py-3 bg-white border-t border-gray-100">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <CreditCard className="h-5 w-5 text-purple-500 mr-2" />
-              <span className="font-medium">Payment Method</span>
-            </div>
-            <div className="flex items-center">
-              <span className="text-sm text-gray-600 mr-2">Visa •••• 4242</span>
-              <button className="text-purple-500 text-sm font-medium">Change</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Order Summary */}
-      {cartItems.length > 0 && (
-        <div className="px-6 py-3 bg-white border-t border-gray-100">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal</span>
-              <span>${deliveryDetails.subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Delivery Fee</span>
-              <span>${deliveryDetails.deliveryFee.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax</span>
-              <span>${deliveryDetails.tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-bold pt-2 border-t border-gray-100 mt-2">
-              <span>Total</span>
-              <span className="text-purple-600">${calculateTotal()}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Checkout Button */}
-      {cartItems.length > 0 && (
-        <div className="px-6 py-4 bg-white border-t border-gray-200">
-          <Button
-            className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full py-3"
-            onClick={() => router.push("/checkout")}
-          >
-            Place Order • ${calculateTotal()}
-          </Button>
-        </div>
-      )}
-
-      <HomeIndicator />
+      <BottomNav />
     </div>
   )
 }

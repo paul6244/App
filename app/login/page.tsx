@@ -1,109 +1,134 @@
 "use client"
 
-import { useFormState, useFormStatus } from "react-dom"
+import type React from "react"
+
+import { useState } from "react"
+import { Mail, Lock, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { StatusBar } from "@/components/status-bar"
-import { HomeIndicator } from "@/components/home-indicator"
-import { login } from "@/actions/auth-actions"
-import { useEffect } from "react"
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button
-      type="submit"
-      className="bg-[#f2f2f7] text-black hover:bg-gray-200 font-bold py-4 px-8 rounded-full text-lg"
-      disabled={pending}
-    >
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Logging in...
-        </>
-      ) : (
-        "Log In"
-      )}
-    </Button>
-  )
-}
+import { useAuth } from "@/context/auth-context"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [state, formAction] = useFormState(login, {})
+  const { login, isAuthenticated } = useAuth()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  useEffect(() => {
-    if (state.success) {
-      router.push("/home")
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    router.push("/products")
+    return null
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    try {
+      const success = await login(email, password)
+      if (success) {
+        router.push("/products")
+      } else {
+        setError("Invalid credentials")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-  }, [state.success, router])
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-rose-200 via-rose-300 to-purple-500">
-      <StatusBar />
+    <div className="flex flex-col min-h-screen auth-gradient px-4">
+      {/* Status bar mockup */}
+      <div className="w-full py-2 flex justify-between items-center text-black">
+        <div>9:41</div>
+        <div className="flex items-center gap-1">
+          <div className="h-3 w-4">•••</div>
+          <div className="h-3 w-4">📶</div>
+          <div className="h-3 w-6">🔋</div>
+        </div>
+      </div>
 
-      <main className="flex-1 flex flex-col px-6 pt-4">
-        <button onClick={() => router.back()} className="flex items-center text-black mb-8">
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          <span>Back</span>
-        </button>
+      <div className="mt-4">
+        <Link href="/" className="inline-flex items-center text-black">
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          Back
+        </Link>
+      </div>
 
-        <h1 className="text-4xl font-bold text-black mb-12">Log in</h1>
+      <div className="flex-1 flex flex-col justify-center w-full max-w-md mx-auto">
+        <h1 className="text-4xl font-bold mb-8 text-black">Login</h1>
 
-        <form action={formAction} className="flex flex-col gap-6">
-          {state.errors?.global && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md">
-              {state.errors.global}
-            </div>
-          )}
+        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
 
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2">
-              <Mail className="h-6 w-6 text-gray-500" />
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Mail className="h-5 w-5 text-gray-500" />
             </div>
             <input
               type="email"
-              name="email"
               placeholder="Enter email"
-              className={`w-full bg-[#f2f2f7] text-gray-500 rounded-full py-4 pl-14 pr-4 text-lg ${
-                state.errors?.email ? "border-2 border-red-500" : ""
-              }`}
+              className="w-full py-4 pl-12 pr-4 bg-[#f2f2f7] text-gray-500 rounded-full focus:outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
-            {state.errors?.email && <p className="text-red-500 text-sm mt-1 ml-4">{state.errors.email[0]}</p>}
           </div>
 
           <div className="relative">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2">
-              <Lock className="h-6 w-6 text-gray-500" />
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-gray-500" />
             </div>
             <input
               type="password"
-              name="password"
               placeholder="Password"
-              className={`w-full bg-[#f2f2f7] text-gray-500 rounded-full py-4 pl-14 pr-4 text-lg ${
-                state.errors?.password ? "border-2 border-red-500" : ""
-              }`}
+              className="w-full py-4 pl-12 pr-4 bg-[#f2f2f7] text-gray-500 rounded-full focus:outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
-            {state.errors?.password && <p className="text-red-500 text-sm mt-1 ml-4">{state.errors.password[0]}</p>}
           </div>
 
-          <div className="flex justify-between items-center mt-2">
-            <button type="button" className="text-black text-sm" onClick={() => router.push("/forgot-password")}>
+          <div className="flex justify-end">
+            <Link href="/forgot-password" className="text-sm text-black underline">
               Forgot password?
+            </Link>
+          </div>
+
+          <div className="flex justify-center mt-8">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-8 py-4 bg-[#f2f2f7] text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-gray-800 mr-2"></div>
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
             </button>
           </div>
-
-          <div className="flex justify-end mt-6">
-            <SubmitButton />
-          </div>
         </form>
-      </main>
 
-      <HomeIndicator />
+        <p className="text-center mt-6 text-black">
+          Don't have an account?{" "}
+          <Link href="/signup" className="font-bold underline">
+            Sign Up
+          </Link>
+        </p>
+      </div>
+
+      {/* iPhone home indicator */}
+      <div className="w-32 h-1 bg-black rounded-full mx-auto mb-2 opacity-20"></div>
     </div>
   )
 }
